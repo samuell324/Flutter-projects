@@ -1,106 +1,156 @@
-import 'package:expenses_app/widgets/chart.dart';
-import 'package:expenses_app/widgets/new_transaction.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import './models/transaction.dart';
+import 'package:flutter/services.dart';
+
+import './widgets/new_transaction.dart';
 import './widgets/transaction_list.dart';
 import './widgets/chart.dart';
+import './models/transaction.dart';
 
 void main() {
-  runApp(MainWindow());
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  runApp(MyApp());
 }
 
-class MainWindow extends StatefulWidget {
+class MyApp extends StatelessWidget {
   @override
-  State<StatefulWidget> createState() {
-    return MainWindowState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Personal Expenses',
+      theme: ThemeData(
+          primarySwatch: Colors.purple,
+          accentColor: Colors.amber,
+          // errorColor: Colors.red,
+          fontFamily: 'Quicksand',
+          textTheme: ThemeData
+              .light()
+              .textTheme
+              .copyWith(
+            title: TextStyle(
+              fontFamily: 'OpenSans',
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+            button: TextStyle(color: Colors.white),
+          ),
+          appBarTheme: AppBarTheme(
+            textTheme: ThemeData
+                .light()
+                .textTheme
+                .copyWith(
+              title: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          )),
+      home: MyHomePage(),
+    );
   }
 }
 
-class MainWindowState extends State {
-  final List<Transaction> _userTransactions = [
-    /*
-    Transaction(
-        id: 't1', title: 'New Shoes', amount: 35.75, dateTime: DateTime.now()),
-    Transaction(
-        id: 't2', title: 'New T-shirt', amount: 22.53, dateTime: DateTime.now()) */
-  ];
+class MyHomePage extends StatefulWidget {
+  // String titleInput;
+  // String amountInput;
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final List<Transaction> _userTransactions = [];
 
   List<Transaction> get _recentTransactions {
-    return _userTransactions
-        .where((tx) =>
-            tx.dateTime.isAfter(DateTime.now().subtract(Duration(days: 7))))
-        .toList();
+    return _userTransactions.where((tx) {
+      return tx.dateTime.isAfter(
+        DateTime.now().subtract(
+          Duration(days: 7),
+        ),
+      );
+    }).toList();
   }
 
-  void _addNewTransaction(String titleTransact, double amountTransact, DateTime chosenDate) {
-    final newTransact = Transaction(
-        title: titleTransact,
-        amount: amountTransact,
-        dateTime: chosenDate,
-        id: DateTime.now().toString()
+  void _addNewTransaction(String txTitle, double txAmount,
+      DateTime chosenDate) {
+    final newTx = Transaction(
+      title: txTitle,
+      amount: txAmount,
+      dateTime: chosenDate,
+      id: DateTime.now().toString(),
     );
 
     setState(() {
-      _userTransactions.add(newTransact);
+      _userTransactions.add(newTx);
     });
   }
 
-  void startAddNewTransact(BuildContext buildContext) {
+  void _startAddNewTransaction(BuildContext ctx) {
     showModalBottomSheet(
-        context: buildContext,
-        builder: (_) {
-          return GestureDetector(
-            child: NewTransaction(_addNewTransaction),
-            onTap: () {},
-            behavior: HitTestBehavior.opaque,
-          );
-        });
+      context: ctx,
+      builder: (_) {
+        return GestureDetector(
+          onTap: () {},
+          child: NewTransaction(_addNewTransaction),
+          behavior: HitTestBehavior.opaque,
+        );
+      },
+    );
   }
 
-  void _deleteTransaction (String id) {
+  void _deleteTransaction(String id) {
     setState(() {
-      _userTransactions.removeWhere((element) => element.id == id);
+      _userTransactions.removeWhere((tx) => tx.id == id);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-          primarySwatch: Colors.purple,
-          accentColor: Colors.amber,
-          errorColor: Colors.red,
-          fontFamily: 'Quicksand',
-          textTheme: ThemeData.light().textTheme.copyWith(
-              title: TextStyle(
-                  fontFamily: 'OpenSans',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18),
-          button: TextStyle(color: Colors.white)
-          ), //textTheme
-          appBarTheme: AppBarTheme(
-              textTheme: ThemeData.light().textTheme.copyWith(
-                  title: TextStyle(fontFamily: 'OpenSans', fontSize: 20)))),
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Personal Expenses'),
-        ),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+    final appBar = AppBar(
+      title: Text(
+        'Personal Expenses',
+      ),
+    );
+    return Scaffold(
+      appBar: appBar,
+      body: SingleChildScrollView(
+        child: Column(
+          // mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Chart(_recentTransactions),
-            TransactionList(_userTransactions, _deleteTransaction)
+          children: <Widget>[
+            Container(
+              height: (MediaQuery
+                  .of(context)
+                  .size
+                  .height -
+                  appBar.preferredSize.height -
+                  MediaQuery
+                      .of(context)
+                      .padding
+                      .top) *
+                  0.3,
+              child: Chart(_recentTransactions),
+            ),
+            Container(
+              height: (MediaQuery
+                  .of(context)
+                  .size
+                  .height -
+                  appBar.preferredSize.height -
+                  MediaQuery
+                      .of(context)
+                      .padding
+                      .top) *
+                  0.7,
+              child: TransactionList(_userTransactions, _deleteTransaction),
+            ),
           ],
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: Builder(
-            builder: (context) => FloatingActionButton(
-                child: Icon(Icons.add),
-                onPressed: () {
-                  startAddNewTransact(context);
-                })),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () => _startAddNewTransaction(context),
       ),
     );
   }
