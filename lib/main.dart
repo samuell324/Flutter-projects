@@ -23,28 +23,22 @@ class MyApp extends StatelessWidget {
           accentColor: Colors.amber,
           // errorColor: Colors.red,
           fontFamily: 'Quicksand',
-          textTheme: ThemeData
-              .light()
-              .textTheme
-              .copyWith(
-            title: TextStyle(
-              fontFamily: 'OpenSans',
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
-            button: TextStyle(color: Colors.white),
-          ),
-          appBarTheme: AppBarTheme(
-            textTheme: ThemeData
-                .light()
-                .textTheme
-                .copyWith(
-              title: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+          textTheme: ThemeData.light().textTheme.copyWith(
+                title: TextStyle(
+                  fontFamily: 'OpenSans',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+                button: TextStyle(color: Colors.white),
               ),
-            ),
+          appBarTheme: AppBarTheme(
+            textTheme: ThemeData.light().textTheme.copyWith(
+                  title: TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
           )),
       home: MyHomePage(),
     );
@@ -71,8 +65,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }).toList();
   }
 
-  void _addNewTransaction(String txTitle, double txAmount,
-      DateTime chosenDate) {
+  void _addNewTransaction(
+      String txTitle, double txAmount, DateTime chosenDate) {
     final newTx = Transaction(
       title: txTitle,
       amount: txAmount,
@@ -87,15 +81,34 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _startAddNewTransaction(BuildContext ctx) {
     showModalBottomSheet(
-      context: ctx,
-      builder: (_) {
-        return GestureDetector(
-          onTap: () {},
-          child: NewTransaction(_addNewTransaction),
-          behavior: HitTestBehavior.opaque,
-        );
-      },
-    );
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(25.0))),
+        backgroundColor: Colors.white,
+        context: context,
+        isScrollControlled: true,
+        builder: (context) => GestureDetector(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  ),
+                  SizedBox(
+                    height: 8.0,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    child: NewTransaction(_addNewTransaction),
+                  ),
+                  SizedBox(height: 10),
+                ],
+              ),
+            ));
   }
 
   void _deleteTransaction(String id) {
@@ -119,28 +132,16 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Container(
-              height: (MediaQuery
-                  .of(context)
-                  .size
-                  .height -
-                  appBar.preferredSize.height -
-                  MediaQuery
-                      .of(context)
-                      .padding
-                      .top) *
+              height: (MediaQuery.of(context).size.height -
+                      appBar.preferredSize.height -
+                      MediaQuery.of(context).padding.top) *
                   0.3,
               child: Chart(_recentTransactions),
             ),
             Container(
-              height: (MediaQuery
-                  .of(context)
-                  .size
-                  .height -
-                  appBar.preferredSize.height -
-                  MediaQuery
-                      .of(context)
-                      .padding
-                      .top) *
+              height: (MediaQuery.of(context).size.height -
+                      appBar.preferredSize.height -
+                      MediaQuery.of(context).padding.top) *
                   0.7,
               child: TransactionList(_userTransactions, _deleteTransaction),
             ),
